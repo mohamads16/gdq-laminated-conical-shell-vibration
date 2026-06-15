@@ -93,7 +93,7 @@ Implemented and benchmarked against selected Shu (1996) tables:
 - Shu Appendix 2 simply supported boundary coefficients, transcribed from the paper
 - Clamped and simply supported boundary combinations
 - Boundary condensation eigenproblem from equations (32)-(36)
-- Table 1 isotropic conical shell validation at high grid resolution
+- High-resolution convergence comparison against Shu Table 1 for isotropic conical shells
 - Table 2 antisymmetric cross-ply convergence validation
 
 ## Scientific Traceability
@@ -101,6 +101,7 @@ Implemented and benchmarked against selected Shu (1996) tables:
 - [Equation map](docs/validation/equation-map.md): maps code modules to Shu (1996) equations and appendices.
 - [Current validation status](docs/validation/validation-results.md): records MATLAB version, validation commands, table errors, and test summary.
 - [Numerical fixes](docs/validation/numerical-fixes.md): documents evidence for numerical corrections and remaining discrepancies.
+- [Known issues](KNOWN_ISSUES.md): summarizes unresolved reproducibility limitations.
 
 ## Laminate Scope
 

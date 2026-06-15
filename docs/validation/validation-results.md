@@ -64,6 +64,7 @@ Final MATLAB unit test run:
 | `test_model_input_validation/testInvalidPositiveScalars` | passed |
 | `test_model_input_validation/testInvalidWaveNumber` | passed |
 | `test_model_input_validation/testInvalidMatricesAndA11` | passed |
+| `test_model_input_validation/testInvalidD11` | passed |
 | `test_model_input_validation/testInvalidRadiusOverGrid` | passed |
 | `test_paper_validation/testTable1IsotropicAtHighResolution` | passed |
 | `test_paper_validation/testTable2CrossplyConvergence` | passed |
