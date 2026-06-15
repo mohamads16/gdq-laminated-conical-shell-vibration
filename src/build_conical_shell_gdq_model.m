@@ -4,6 +4,8 @@ arguments
     params struct
 end
 
+validate_model_params(params);
+
 %% --- Parameters
 L     = params.L;    
 R1    = params.R1;   
@@ -13,8 +15,6 @@ A     = params.A;
 B     = params.B;   
 D     = params.D;
 Nx    = params.Nx;
-
-assert(isscalar(L) && L>0 && Nx>=5, 'Use L>0 and Nx>=5 (W needs up to 4th order).');
 
 % --- GDQ nodes and derivative matrices on [0,L]
 [x, Dx] = gdq_chebyshev_lobatto(Nx, 0, L, 4);
@@ -131,4 +131,71 @@ mdl.BC = BC;
 
 % Copy of original params for reference
 mdl.params = params;
+end
+
+%===============================================================================
+function validate_model_params(params)
+requiredFields = ["L","R1","alpha","n","rho","h","A","B","D","Nx"];
+missing = requiredFields(~isfield(params, requiredFields));
+if ~isempty(missing)
+    error('build_conical_shell_gdq_model:MissingField', ...
+        'Missing required parameter field(s): %s.', strjoin(missing, ', '));
+end
+
+validate_positive_scalar(params.L, 'L');
+validate_positive_scalar(params.R1, 'R1');
+validate_real_finite_scalar(params.alpha, 'alpha');
+validate_positive_scalar(params.rho, 'rho');
+validate_positive_scalar(params.h, 'h');
+
+if ~isscalar(params.Nx) || ~isnumeric(params.Nx) || ~isreal(params.Nx) || ...
+        ~isfinite(params.Nx) || params.Nx ~= floor(params.Nx) || params.Nx < 5
+    error('build_conical_shell_gdq_model:InvalidNx', ...
+        'Nx must be an integer greater than or equal to 5.');
+end
+
+if ~isscalar(params.n) || ~isnumeric(params.n) || ~isreal(params.n) || ...
+        ~isfinite(params.n) || params.n ~= floor(params.n) || params.n < 0
+    error('build_conical_shell_gdq_model:InvalidWaveNumber', ...
+        'n must be a nonnegative integer circumferential wave number.');
+end
+
+validate_real_finite_matrix3(params.A, 'A');
+validate_real_finite_matrix3(params.B, 'B');
+validate_real_finite_matrix3(params.D, 'D');
+
+if params.A(1,1) <= 0
+    error('build_conical_shell_gdq_model:InvalidA11', ...
+        'A(1,1) must be positive for frequency normalization.');
+end
+
+[xCheck, ~] = gdq_chebyshev_lobatto(params.Nx, 0, params.L, 1);
+R = params.R1 + xCheck*sin(params.alpha);
+if any(R <= 0)
+    error('build_conical_shell_gdq_model:InvalidRadius', ...
+        'R(x) must be positive at every GDQ grid point.');
+end
+end
+
+function validate_positive_scalar(value, name)
+validate_real_finite_scalar(value, name);
+if value <= 0
+    error('build_conical_shell_gdq_model:InvalidPositiveScalar', ...
+        '%s must be positive.', name);
+end
+end
+
+function validate_real_finite_scalar(value, name)
+if ~isscalar(value) || ~isnumeric(value) || ~isreal(value) || ~isfinite(value)
+    error('build_conical_shell_gdq_model:InvalidScalar', ...
+        '%s must be a real finite scalar.', name);
+end
+end
+
+function validate_real_finite_matrix3(value, name)
+if ~isnumeric(value) || ~isreal(value) || ~isequal(size(value), [3 3]) || ...
+        any(~isfinite(value), 'all')
+    error('build_conical_shell_gdq_model:InvalidMatrix', ...
+        '%s must be a real finite 3x3 matrix.', name);
+end
 end

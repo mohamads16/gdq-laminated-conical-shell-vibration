@@ -1,4 +1,4 @@
-# Final Validation Report
+# Current Validation Status
 
 Validation was run after the project structure cleanup, API rename, boundary-label fix, and Shu cross-ply coupling correction.
 
@@ -52,16 +52,25 @@ Final MATLAB unit test run:
 
 | Test | Result |
 | --- | --- |
+| `test_eigenvalue_filter/testPositiveRealEigenvaluesAccepted` | passed |
+| `test_eigenvalue_filter/testNegativeZeroAndComplexRejected` | passed |
+| `test_eigenvalue_filter/testTinyImaginaryRoundoffAccepted` | passed |
 | `test_gdq_derivatives/testPolynomialDerivatives` | passed |
 | `test_gdq_derivatives/testNodeOrdering` | passed |
 | `test_laminate_support/testCrossPlyLaminateIsAccepted` | passed |
 | `test_laminate_support/testAnglePlyLaminateIsRejected` | passed |
+| `test_model_input_validation/testMissingRequiredField` | passed |
+| `test_model_input_validation/testInvalidNx` | passed |
+| `test_model_input_validation/testInvalidPositiveScalars` | passed |
+| `test_model_input_validation/testInvalidWaveNumber` | passed |
+| `test_model_input_validation/testInvalidMatricesAndA11` | passed |
+| `test_model_input_validation/testInvalidRadiusOverGrid` | passed |
 | `test_paper_validation/testTable1IsotropicAtHighResolution` | passed |
 | `test_paper_validation/testTable2CrossplyConvergence` | passed |
 | `test_paper_validation/testKnownNx13IsotropicMismatch` | passed |
 | `test_solver_metadata/testEigenFilterAndBoundaryDiagnosticsExist` | passed |
 
-Overall: 8 passed, 0 failed, 0 incomplete.
+Overall: 17 passed, 0 failed, 0 incomplete.
 
 ## Unresolved Nx=13 Discrepancy
 
