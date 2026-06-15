@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite the software and the Shu (1996) paper."
+title: "GDQ Laminated Conical Shell Vibration"
+type: software
+authors:
+  - family-names: Sadeghi
+    given-names: Mohammad
+date-released: 2026-06-15
+license: MIT
+references:
+  - type: article
+    authors:
+      - family-names: Shu
+        given-names: C.
+    title: "Free vibration analysis of composite laminated conical shells by generalized differential quadrature"
+    journal: "Journal of Sound and Vibration"
+    year: 1996
+    volume: 194
+    issue: 4
+    start: 587
+    end: 604

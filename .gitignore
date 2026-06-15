@@ -1,0 +1,28 @@
+# Local paper copy. Do not publish unless redistribution rights are confirmed.
+shu1996.pdf
+
+# MATLAB editor/autosave artifacts
+*.asv
+*.m~
+*.autosave
+
+# MATLAB generated outputs and caches
+*.mex*
+*.slxc
+*.mat
+*.fig
+*.png
+*.jpg
+*.jpeg
+*.tif
+*.tiff
+!docs/figures/*.png
+html/
+output/
+generated/
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
