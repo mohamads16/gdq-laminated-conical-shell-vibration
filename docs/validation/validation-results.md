@@ -70,7 +70,7 @@ Final MATLAB unit test run:
 | `test_paper_validation/testKnownNx13IsotropicMismatch` | passed |
 | `test_solver_metadata/testEigenFilterAndBoundaryDiagnosticsExist` | passed |
 
-Overall: 17 passed, 0 failed, 0 incomplete.
+Overall: 18 passed, 0 failed, 0 incomplete.
 
 ## Unresolved Nx=13 Discrepancy
 
