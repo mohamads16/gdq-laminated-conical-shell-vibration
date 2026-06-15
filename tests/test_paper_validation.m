@@ -23,6 +23,14 @@ verifyLessThanOrEqual(testCase, max(abs(computed(2,:) - reference(2,:))), 7.0e-3
 verifyEqual(testCase, computed(2,5), 0.1799, 'AbsTol', 3.0e-3); % N=13, Nl=2
 end
 
+function testKnownNx13IsotropicMismatch(testCase)
+computed = compute_table1_isotropic(13);
+lambdaNx13 = computed(1,1); % SS-SS, n=0
+
+verifyEqual(testCase, lambdaNx13, 0.18016, 'AbsTol', 5.0e-5);
+verifyGreaterThan(testCase, abs(lambdaNx13 - 0.1493), 2.0e-2);
+end
+
 function [computed, reference] = compute_table1_isotropic(Nx)
 R2 = 1.0;
 alpha = deg2rad(30);

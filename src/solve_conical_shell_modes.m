@@ -83,6 +83,14 @@ A_IB = A_I(:, idxB);
 B_I  = B(:, idxI);
 B_B  = B(:, idxB);
 
+boundaryRcond = rcond(full(B_B));
+boundaryRcondWarnThreshold = 1e-12;
+if boundaryRcond < boundaryRcondWarnThreshold
+    warning('solve_conical_shell_modes:IllConditionedBoundaryBlock', ...
+        'Boundary block rcond is %.3e; mode results may be unreliable.', ...
+        boundaryRcond);
+end
+
 % From B * X = 0:
 %   B_I * X_I + B_B * X_B = 0  =>  X_B = -B_B^{-1} * B_I * X_I
 % Boundary map X_B = T * X_I
@@ -103,29 +111,59 @@ Kred = -(A_II + A_IB*T);      % == -(A_II - A_IB*(B_B\B_I))
 % ---------------- Solve ------------------------------------------------------------
 
 % Number of modes to compute: cannot exceed (dimension of Kred - 2) for safety
-k = min(nmodes, size(Kred,1)-2);
+requestedModes = min(nmodes, size(Kred,1)-2);
+if requestedModes < 1
+    error('solve_conical_shell_modes:TooFewDofs', ...
+        'Reduced eigenproblem is too small to compute modes.');
+end
 
 % Options for eigs (iterative eigen-solver)
 opts.tol = 1e-10;
 opts.maxit = 2e4;
 opts.isreal = true;            % <-- keep; drop opts.issym
 
-try
-    % Target the smallest magnitude eigenvalues (near zero)
-    [Vred, Dred] = eigs(Kred, k, 0, opts);
-catch
-    % Fallback: for small or problematic systems, use full eig
-    [Vfull, Dfull] = eig(full(Kred));
-    % Sort all eigenvalues by absolute value and keep the k smallest
-    [~, order] = sort(abs(diag(Dfull)));
-    Vred = Vfull(:, order(1:k));
-    Dred = diag(diag(Dfull(order(1:k),order(1:k))));
-end
-
-% Extract eigenvalues mu (mu = rho*h*omega^2 theoretically)
-mu    = real(diag(Dred));                  % = rho*h*omega^2  (should be >=0 now)
 rho   = mdl.params.rho;  h = mdl.params.h;
 A11   = mdl.params.A(1,1);  R2 = mdl.geom.R2;
+
+eigMeta = struct();
+candidateModes = min(size(Kred,1)-2, max(requestedModes + 8, 2*requestedModes));
+if candidateModes < requestedModes
+    candidateModes = requestedModes;
+end
+
+try
+    [Vraw, Draw] = eigs(Kred, candidateModes, 0, opts);
+    eigMeta.solver = 'eigs';
+catch
+    [Vraw, Draw] = eig(full(Kred));
+    eigMeta.solver = 'eig';
+end
+
+rawEigenvalues = diag(Draw);
+[keep, filterMeta] = filter_physical_eigenvalues(rawEigenvalues);
+
+if nnz(keep) < requestedModes && ~strcmp(eigMeta.solver, 'eig')
+    [Vraw, Draw] = eig(full(Kred));
+    rawEigenvalues = diag(Draw);
+    [keep, filterMeta] = filter_physical_eigenvalues(rawEigenvalues);
+    eigMeta.solver = 'eig';
+    eigMeta.fallbackReason = 'Too few physical eigenvalues from eigs candidate set.';
+end
+
+acceptedIdx = find(keep);
+if isempty(acceptedIdx)
+    error('solve_conical_shell_modes:NoPhysicalEigenvalues', ...
+        'No positive real eigenvalues passed the physical-mode filter.');
+end
+
+lambdaCandidates = R2 * sqrt(real(rawEigenvalues(acceptedIdx)) / A11);
+[~, acceptedOrder] = sort(lambdaCandidates(:));
+selectedIdx = acceptedIdx(acceptedOrder(1:min(requestedModes, numel(acceptedIdx))));
+
+Vred = Vraw(:, selectedIdx);
+rawSelectedEigenvalues = rawEigenvalues(selectedIdx);
+mu = real(rawSelectedEigenvalues);         % = rho*h*omega^2
+k = numel(mu);
 
 % Dimensional frequency: omega = sqrt(mu / (rho*h))
 omega  = sqrt(mu / (rho*h));
@@ -161,12 +199,57 @@ end
 [lambda, ord] = sort(lambda(:));
 omega = omega(ord); mu = mu(ord);
 XU = XU(:,ord); XV = XV(:,ord); XW = XW(:,ord);
+rawSelectedEigenvalues = rawSelectedEigenvalues(ord);
 
 sol.lambda = lambda; sol.omega = omega; sol.mu = mu;
 sol.XU = XU; sol.XV = XV; sol.XW = XW;
 sol.idx.I = idxI; sol.idx.B = idxB;
 sol.Kred  = Kred; sol.T = T;
 sol.meta.bcSmall = bcSmall; sol.meta.bcLarge = bcLarge;
+sol.meta.boundaryBlockRcond = boundaryRcond;
+sol.meta.boundaryBlockRcondWarningThreshold = boundaryRcondWarnThreshold;
+sol.meta.eigenFilter = filterMeta;
+sol.meta.eigenSolver = eigMeta;
+sol.meta.rawSelectedEigenvalues = rawSelectedEigenvalues;
+end
+
+%===============================================================================
+function [keep, meta] = filter_physical_eigenvalues(eigenvalues)
+% Keep eigenvalues that represent positive physical values of rho*h*omega^2.
+
+eigenvalues = eigenvalues(:);
+imagAbsTol = 1e-10;
+imagRelTol = 1e-8;
+imagLimit = max(imagAbsTol, imagRelTol * max(1, abs(eigenvalues)));
+imagReject = abs(imag(eigenvalues)) > imagLimit;
+
+positiveTol = 1e-12 * max(1, max(abs(real(eigenvalues))));
+nonpositiveReject = real(eigenvalues) <= positiveTol;
+
+keep = ~(imagReject | nonpositiveReject);
+rejectedIdx = find(~keep);
+reasons = strings(numel(rejectedIdx), 1);
+for j = 1:numel(rejectedIdx)
+    idx = rejectedIdx(j);
+    parts = strings(0,1);
+    if imagReject(idx)
+        parts(end+1,1) = "non-negligible imaginary part"; %#ok<AGROW>
+    end
+    if nonpositiveReject(idx)
+        parts(end+1,1) = "nonpositive physical eigenvalue"; %#ok<AGROW>
+    end
+    reasons(j) = strjoin(parts, "; ");
+end
+
+meta = struct();
+meta.imagAbsTol = imagAbsTol;
+meta.imagRelTol = imagRelTol;
+meta.positiveTol = positiveTol;
+meta.rawEigenvalues = eigenvalues;
+meta.acceptedIndices = find(keep);
+meta.rejectedIndices = rejectedIdx;
+meta.rejectedEigenvalues = eigenvalues(rejectedIdx);
+meta.rejectedReasons = reasons;
 end
 
 %===============================================================================

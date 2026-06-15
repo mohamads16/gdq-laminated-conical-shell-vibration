@@ -1,6 +1,6 @@
 # GDQ Laminated Conical Shell Vibration
 
-MATLAB implementation of a generalized differential quadrature (GDQ) method for free vibration analysis of isotropic and laminated conical shells, based on Shu (1996).
+MATLAB implementation of a generalized differential quadrature (GDQ) method for free vibration analysis of isotropic and selected laminated conical shells, based on Shu (1996).
 
 The code solves the separated conical-shell equations for circumferential wave number `n`, simply supported (`SS`) and clamped (`C`) edge combinations, and reports the nondimensional frequency parameter
 
@@ -49,7 +49,7 @@ results = runtests('tests');
 table(results)
 ```
 
-The tests validate GDQ derivative weights, edge-label behavior, and selected paper-table reproductions.
+The tests check GDQ derivative weights, edge-label behavior, solver metadata, laminate coupling guardrails, and selected paper-table reproductions.
 
 ## Repository Layout
 
@@ -63,18 +63,25 @@ archive/             Broken, duplicate, or legacy original files
 
 ## Validation Status
 
-Implemented and validated:
+Implemented and benchmarked against selected Shu (1996) tables:
 
-- Shu Appendix 1 coefficient assembly for equations (25a)-(25c)
-- Shu Appendix 2 simply supported boundary coefficients
+- Shu Appendix 1 coefficient assembly for equations (25a)-(25c), transcribed from the paper
+- Shu Appendix 2 simply supported boundary coefficients, transcribed from the paper
 - Clamped and simply supported boundary combinations
 - Boundary condensation eigenproblem from equations (32)-(36)
 - Table 1 isotropic conical shell validation at high grid resolution
 - Table 2 antisymmetric cross-ply convergence validation
 
+## Laminate Scope
+
+The current solver uses the ABD terms that appear in Shu's governing equations: `11`, `12`, `22`, and `66`. It supports isotropic, cross-ply, and specially orthotropic-style stiffness data where `16/26` coupling terms are negligible.
+
+`laminate_abd_clt` and `laminate_from_unidirectional_plies` reject laminates with non-negligible `A16/A26`, `B16/B26`, or `D16/D26` terms. Fully anisotropic angle-ply laminates need additional governing-equation terms and are intentionally not silently truncated.
+
 Known limitation:
 
 - Shu Table 1 states that 13 grid points were used, but this implementation gives `lambda=0.18016` for the isotropic `SS-SS`, `n=0`, `Nx=13` case and converges to about `0.15059` for larger `Nx`, close to the table value `0.1493`. Derivative matrix and eigenspectrum diagnostics did not identify a confirmed code bug. This is documented in `docs/validation/numerical-fixes.md`.
+- Appendix 1 coefficient formulas are transcribed into code but not independently rederived in this repository; see `docs/validation/equation-map.md`.
 
 ## Paper PDF
 
@@ -89,4 +96,3 @@ Shu, C. (1996). Free vibration analysis of composite laminated conical shells by
 ## License
 
 MIT License. See `LICENSE`.
-

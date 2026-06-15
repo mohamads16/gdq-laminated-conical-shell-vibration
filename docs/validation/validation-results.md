@@ -54,10 +54,14 @@ Final MATLAB unit test run:
 | --- | --- |
 | `test_gdq_derivatives/testPolynomialDerivatives` | passed |
 | `test_gdq_derivatives/testNodeOrdering` | passed |
+| `test_laminate_support/testCrossPlyLaminateIsAccepted` | passed |
+| `test_laminate_support/testAnglePlyLaminateIsRejected` | passed |
 | `test_paper_validation/testTable1IsotropicAtHighResolution` | passed |
 | `test_paper_validation/testTable2CrossplyConvergence` | passed |
+| `test_paper_validation/testKnownNx13IsotropicMismatch` | passed |
+| `test_solver_metadata/testEigenFilterAndBoundaryDiagnosticsExist` | passed |
 
-Overall: 4 passed, 0 failed, 0 incomplete.
+Overall: 8 passed, 0 failed, 0 incomplete.
 
 ## Unresolved Nx=13 Discrepancy
 

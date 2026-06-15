@@ -17,9 +17,8 @@ function lam = laminate_abd_clt(plies)
 %
 %   Note:
 %     The current conical-shell solver follows Shu's equations using only
-%     the 11, 12, 22, and 66 ABD terms. This helper computes transformed
-%     Qbar diagnostics, but returns ABD matrices with 16/26 terms set to
-%     zero to match that solver interface.
+%     the 11, 12, 22, and 66 ABD terms. Laminates with non-negligible
+%     16/26 coupling terms are rejected rather than silently truncated.
 
 
 arguments
@@ -59,13 +58,28 @@ end
 % Equivalent density: average over total thickness
 rho_eq = rho_m / h;
 
-% Keep only the components used by the cone model (11,12,22,66 positions)
-% but store full 3x3 for generality
+couplingTerms = [A(1,3) A(2,3) B(1,3) B(2,3) D(1,3) D(2,3) ...
+                 A(3,1) A(3,2) B(3,1) B(3,2) D(3,1) D(3,2)];
+couplingScale = max([1, max(abs(A),[],'all'), max(abs(B),[],'all'), max(abs(D),[],'all')]);
+couplingTol = 1e-10 * couplingScale;
+maxCoupling16_26 = max(abs(couplingTerms));
+if maxCoupling16_26 > couplingTol
+    error('laminate_abd_clt:UnsupportedCoupling16_26', ...
+        ['The current conical-shell solver does not support nonzero ', ...
+         'ABD 16/26 coupling terms. Maximum 16/26 term is %.3e; ', ...
+         'tolerance is %.3e. Use isotropic, cross-ply, or specially ', ...
+         'orthotropic laminates for this solver.'], ...
+         maxCoupling16_26, couplingTol);
+end
+
+% Keep only the components used by the cone model (11,12,22,66 positions).
 lam.A = [A(1,1) A(1,2) 0; A(2,1) A(2,2) 0; 0 0 A(3,3)];
 lam.B = [B(1,1) B(1,2) 0; B(2,1) B(2,2) 0; 0 0 B(3,3)];
 lam.D = [D(1,1) D(1,2) 0; D(2,1) D(2,2) 0; 0 0 D(3,3)];
 lam.h = h;                                                 % total thickness
 lam.rho = rho_eq;                                          % equivalent density
+lam.maxCoupling16_26 = maxCoupling16_26;
+lam.coupling16_26Tolerance = couplingTol;
 
 % Optional diagnostics: store per-ply Qbar and z-intervals
 lam.Qbar_per_ply = Qbar_per_ply(plies, z);

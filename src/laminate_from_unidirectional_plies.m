@@ -3,7 +3,9 @@ function lam = laminate_from_unidirectional_plies(E1,E2,nu12,G12,rho,ply_t,angle
 %
 %   lam = laminate_from_unidirectional_plies(E1,E2,nu12,G12,rho,ply_t,angles_deg)
 %   creates a ply stack with identical material properties and one angle per
-%   ply, then calls laminate_abd_clt.
+%   ply, then calls laminate_abd_clt. Angle-ply stacks that produce
+%   non-negligible 16/26 ABD coupling terms are rejected because the current
+%   conical-shell solver does not include those governing-equation terms.
 
 angles_deg = angles_deg(:).';
 np = numel(angles_deg);
