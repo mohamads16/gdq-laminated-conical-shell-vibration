@@ -1,5 +1,8 @@
 # GDQ Laminated Conical Shell Vibration
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+![MATLAB R2025b](https://img.shields.io/badge/MATLAB-R2025b-blue.svg)
+
 MATLAB implementation of a generalized differential quadrature (GDQ) method for free vibration analysis of isotropic and selected laminated conical shells, based on Shu (1996).
 
 The code solves the separated conical-shell equations for circumferential wave number `n`, simply supported (`SS`) and clamped (`C`) edge combinations, and reports the nondimensional frequency parameter
@@ -36,6 +39,12 @@ disp(sol.lambda)
 Run from the repository root:
 
 ```matlab
+run('run_all_validation.m')
+```
+
+Or run individual examples:
+
+```matlab
 run('examples/validate_table1_isotropic.m')
 run('examples/validate_table2_crossply.m')
 run('examples/convergence_isotropic_ssss.m')
@@ -50,6 +59,21 @@ table(results)
 ```
 
 The tests check GDQ derivative weights, edge-label behavior, solver metadata, laminate coupling guardrails, and selected paper-table reproductions.
+
+## Public API
+
+| Function | Purpose |
+| --- | --- |
+| `build_conical_shell_gdq_model` | Validate inputs and build GDQ nodes, derivative matrices, geometry, coefficients, and boundary data. |
+| `solve_conical_shell_modes` | Assemble the condensed eigenproblem and return frequencies, mode shapes, and diagnostics. |
+| `gdq_chebyshev_lobatto` | Build Chebyshev-Lobatto GDQ nodes and derivative matrices. |
+| `laminate_isotropic` | Build isotropic ABD stiffness data. |
+| `laminate_shu_crossply` | Build Shu (1996) antisymmetric cross-ply stiffness data for validation cases. |
+| `laminate_abd_clt` | Build supported CLT ABD data and reject unsupported `16/26` coupling. |
+| `laminate_from_unidirectional_plies` | Convenience helper for identical UD ply stacks within the supported laminate scope. |
+| `plot_mode_shapes_1d` | Plot `U`, `V`, and `W` mode-shape components along the generator. |
+| `plot_mode_shape_3d` | Plot a 3D radial deformation view for one mode. |
+| `filter_physical_eigenvalues` | Filter candidate eigenvalues for positive real physical values. |
 
 ## Repository Layout
 
@@ -71,6 +95,12 @@ Implemented and benchmarked against selected Shu (1996) tables:
 - Boundary condensation eigenproblem from equations (32)-(36)
 - Table 1 isotropic conical shell validation at high grid resolution
 - Table 2 antisymmetric cross-ply convergence validation
+
+## Scientific Traceability
+
+- [Equation map](docs/validation/equation-map.md): maps code modules to Shu (1996) equations and appendices.
+- [Current validation status](docs/validation/validation-results.md): records MATLAB version, validation commands, table errors, and test summary.
+- [Numerical fixes](docs/validation/numerical-fixes.md): documents evidence for numerical corrections and remaining discrepancies.
 
 ## Laminate Scope
 
