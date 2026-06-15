@@ -26,7 +26,6 @@ Diagnostics so far indicate that the selected eigenvalue is not an `eigs` target
 
 This discrepancy is documented and regression-tested in `tests/test_paper_validation.m`; it has not been tuned away.
 
-## Appendix 1 Coefficients
+## Appendix 1/2 Coefficients
 
-The Appendix 1 `S_ijk` coefficient expressions are transcribed into the implementation and benchmarked against selected Shu (1996) validation tables. They have not been independently rederived coefficient-by-coefficient in this repository.
-
+The Appendix 1 `S_ijk` coefficient expressions and Appendix 2 simply supported boundary-condition coefficients are transcribed into the implementation and benchmarked against selected Shu (1996) validation tables. They have not been independently rederived coefficient-by-coefficient in this repository.
