@@ -65,6 +65,18 @@ verifyError(testCase, @() build_conical_shell_gdq_model(params), ...
     'build_conical_shell_gdq_model:InvalidA11');
 end
 
+function testInvalidD11(testCase)
+params = valid_params();
+params.D(1,1) = 0;
+verifyError(testCase, @() build_conical_shell_gdq_model(params), ...
+    'build_conical_shell_gdq_model:InvalidD11');
+
+params = valid_params();
+params.D(1,1) = -1;
+verifyError(testCase, @() build_conical_shell_gdq_model(params), ...
+    'build_conical_shell_gdq_model:InvalidD11');
+end
+
 function testInvalidRadiusOverGrid(testCase)
 params = valid_params();
 params.alpha = -pi/2;
@@ -84,4 +96,3 @@ params = struct('L',L, 'R1',R1, 'alpha',alpha, 'n',3, ...
                 'rho',lam.rho, 'h',lam.h, ...
                 'A',lam.A, 'B',lam.B, 'D',lam.D, 'Nx',13);
 end
-

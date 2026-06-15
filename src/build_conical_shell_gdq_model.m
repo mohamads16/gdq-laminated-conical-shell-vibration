@@ -169,6 +169,11 @@ if params.A(1,1) <= 0
         'A(1,1) must be positive for frequency normalization.');
 end
 
+if params.D(1,1) <= 0
+    error('build_conical_shell_gdq_model:InvalidD11', ...
+        'D(1,1) must be positive because it is used in bending boundary-condition coefficients.');
+end
+
 [xCheck, ~] = gdq_chebyshev_lobatto(params.Nx, 0, params.L, 1);
 R = params.R1 + xCheck*sin(params.alpha);
 if any(R <= 0)
